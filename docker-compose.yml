@@ -1,0 +1,18 @@
+services:
+  wa-pengeluaran:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wa-pengeluaran
+    environment:
+      TZ: Asia/Jakarta
+    ports:
+      - "3001:3000"   # sesuaikan dengan port Express di index.mjs
+    volumes:
+      - ./auth_info:/app/auth_info
+    restart: unless-stopped
+    networks:
+      - cloudflared
+networks:
+   cloudflared:
+     external: true

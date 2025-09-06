@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Initialize npm project and install dependencies
 RUN npm init -y \
-  && npm install @whiskeysockets/baileys@6.7.18 qrcode-terminal@0.12.0
+  && npm install @whiskeysockets/baileys@6.7.18 qrcode-terminal@0.12.0 pg node-cron express
 
 COPY index.mjs .
 

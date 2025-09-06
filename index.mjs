@@ -167,28 +167,31 @@ async function kirimRingkasan(tipe, start, end, toJid = TARGET_JID_DEFAULT) {
     const result = await db.query(
       `SELECT SUM(nominal) AS total, COUNT(*) AS jumlah
        FROM public.pengeluaran
-       WHERE waktu BETWEEN $1 AND $2`,
-      [start, end]
+       WHERE waktu BETWEEN $1 AND $2
+         AND pengirim = $3`,
+      [start, end, toJid]
     );
 
     const { total, jumlah } = result.rows[0] || { total: 0, jumlah: 0 };
 
     const resList = await db.query(
-      `SELECT nominal, keterangan 
-       FROM public.pengeluaran 
-       WHERE waktu BETWEEN $1 AND $2 
+      `SELECT nominal, keterangan
+       FROM public.pengeluaran
+       WHERE waktu BETWEEN $1 AND $2
+         AND pengirim = $3
        ORDER BY waktu ASC`,
-      [start, end]
+      [start, end, toJid]
     );
 
-    const detail = resList.rows
-      .map((r, i) => `${i + 1}. Rp${Number(r.nominal).toLocaleString()} - ${r.keterangan}`)
-      .join('\n');
+    const detail = resList.rows.length
+      ? resList.rows
+          .map((r, i) => `${i + 1}. Rp${Number(r.nominal).toLocaleString()} - ${r.keterangan || '-'}`)
+          .join('\n')
+      : null;
 
     const label =
       tipe === 'harian' ? 'Hari Ini' :
-      tipe === 'mingguan' ? 'Minggu Ini' :
-      'Bulan Ini';
+      tipe === 'mingguan' ? 'Minggu Ini' : 'Bulan Ini';
 
     const pesan =
       `📊 Ringkasan Pengeluaran ${label} (WIB):\n\n` +
@@ -206,6 +209,7 @@ async function kirimRingkasan(tipe, start, end, toJid = TARGET_JID_DEFAULT) {
     console.error(`❌ Gagal mengirim ringkasan ${tipe}:`, err);
   }
 }
+
 
 // ====== JADWAL (Asia/Jakarta) ======
 // 1) Harian — setiap hari 21:00 WIB
